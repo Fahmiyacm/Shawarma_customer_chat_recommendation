@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -13,11 +14,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
-          lfs: true  # to fetch LFS files like model, images
+          fetch-depth: 0
+          lfs: true  # Fetch LFS files like model, images
 
       - name: Install Git LFS
         run: |
-          sudo apt-get install git-lfs
+          sudo apt-get update
+          sudo apt-get install -y git-lfs
           git lfs install
 
       - name: Set up Python
@@ -30,9 +33,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Remove Screenshot Folder (Skip Upload to HF)
+      - name: Debug File Presence
         run: |
-          rm -rf screenshots
+          ls -lR .
+          git lfs ls-files
 
       - name: Push to Hugging Face
         env:
@@ -40,11 +44,11 @@ jobs:
         run: |
           git config --global user.email "fahmiyacm@gmail.com"
           git config --global user.name "Fahmiyacm"
-          
-          # Clone your space repo
           git clone https://huggingface.co/spaces/Fahmiyacm/shawarma_customer_app hf_space
-          cp -r * hf_space/
           cd hf_space
+          git lfs fetch --all
+          git lfs checkout
+          rsync -av --exclude=.git --exclude=hf_space --exclude=Screenshots ../* .
           git add .
-          git commit -m "Auto deploy from GitHub"
-          git push https://huggingface.co/Fahmiyacm:${HF_TOKEN}@huggingface.co/spaces/Fahmiyacm/shawarma_customer_app main
+          git commit -m "Auto deploy from GitHub" || echo "No changes to commit"
+          git push https://$HF_TOKEN@huggingface.co/spaces/Fahmiyacm/shawarma_customer_app main
