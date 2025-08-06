@@ -1,0 +1,19 @@
+# Python related
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+
+# Virtual environments
+venv/
+Myenv/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# Docker
+*.dockerignore

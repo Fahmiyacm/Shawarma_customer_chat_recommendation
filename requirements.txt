@@ -1,0 +1,13 @@
+streamlit==1.39.0
+python-dotenv==1.1.0
+Pillow==10.4.0
+psycopg2-binary==2.9.10
+langchain-community
+langchain-groq
+langchain
+sentence-transformers==3.1.1
+pandas==2.2.3
+plotly==5.24.1
+prophet==1.1.6
+torch==2.4.1
+faiss-cpu

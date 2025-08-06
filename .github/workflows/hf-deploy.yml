@@ -1,0 +1,42 @@
+name: Deploy to Hugging Face Space
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Install Git LFS
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git-lfs
+          git lfs install
+
+      - name: Debug File Presence
+        run: |
+          ls -lR Screenshots/
+          git lfs ls-files
+
+      - name: Push to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config --global user.email "fahmiyacm@gmail.com"
+          git config --global user.name "Fahmiyacm"
+          git clone https://huggingface.co/spaces/Fahmiyacm/shawarma_customer_app hf_space
+          cd hf_space
+          git lfs fetch --all
+          git lfs checkout
+          rsync -av --exclude=.git ../* .
+          git add .
+          git commit -m "Auto deploy to Hugging Face" || echo "No changes to commit"
+          git push https://$HF_TOKEN@huggingface.co/spaces/Fahmiyacm/shawarma_customer_app main
