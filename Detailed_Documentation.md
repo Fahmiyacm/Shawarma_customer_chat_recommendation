@@ -26,7 +26,7 @@ ShawarmaCustomerApp/
 
 ├── build_vectorstore.py        # FAISS index creation
 
-├── Shawarma_app.py             # Main Streamlit customer app
+├── app.py             # Main Streamlit customer app
 
 ├── .env                        # Environment variables (DATABASE_URL, GROQ_API_KEY)
 

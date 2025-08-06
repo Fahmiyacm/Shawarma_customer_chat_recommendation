@@ -41,8 +41,7 @@ def evaluate_models(phone):
     # Return best model based on category precision
     return "cosine" if precision_cosine >= precision_deep else "deep"
 
-if __name__ == "__main__":
-    print(evaluate_models("+971555249922"))
+
 
 
 

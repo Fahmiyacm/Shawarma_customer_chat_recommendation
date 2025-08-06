@@ -219,13 +219,7 @@ def model_deeplearning(phone):
 
     return recommendations if recommendations else db_helper.get_popular_items()[:5]
 
-# ---------- Test ----------
 
-if __name__ == "__main__":
-    phone = "+971559284373"
-    print("Order History:", db_helper.get_user_order_history(phone))
-    print("Cosine Recommendations:", model_cosine(phone))
-    print("Deep Learning Recommendations:", model_deeplearning(phone))
-    print("Popular Items:", db_helper.get_popular_items()[:5])
+
 
 

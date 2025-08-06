@@ -36,7 +36,9 @@ It uses Neon PostgreSQL for storage, FAISS for semantic search, and deep learnin
 
 **build_vectorstore.py** – Builds FAISS index
 
-**Shawarma_app.py** – Main customer-facing Streamlit app
+app.py- 
+
+**app.py** – Main customer-facing Streamlit app
 
 **.env** – API keys & DB config
 

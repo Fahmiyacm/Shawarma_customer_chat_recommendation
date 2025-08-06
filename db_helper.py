@@ -209,10 +209,3 @@ def get_next_order_id() -> str:
         cursor.close()
         conn.close()
 
-# --- Testing Example ---
-if __name__ == "__main__":
-    print(get_user_order_history("+971559284373"))
-    print("Popular Items:", get_popular_items())
-    print("All Menu Items:", get_all_menu_items())
-    print("Price:", get_item_price('Shawarma Chicken Medium'))
-    print("Items by Category:", get_items_by_category('Shawarma'))
