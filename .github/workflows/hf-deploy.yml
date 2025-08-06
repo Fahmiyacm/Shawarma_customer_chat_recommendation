@@ -62,4 +62,4 @@ jobs:
           rsync -av --exclude=.git --exclude=hf_space --exclude=Screenshots ../* .
           git add .
           git commit -m "Auto deploy from GitHub" || echo "No changes to commit"
-          git push https://$HF_TOKEN@huggingface.co/spaces/Fahmiyacm/shawarma_customer_app main
+          git push https://Fahmiyacm:$HF_TOKEN@huggingface.co/spaces/Fahmiyacm/shawarma_customer_app main
