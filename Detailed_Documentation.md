@@ -8,6 +8,8 @@ The Shawarma DKENZ Customer App (Shawarma_app.py) is a Streamlit-based web appli
 
 ShawarmaCustomerApp/
 
+├── .github/                    # workflows folder foe creating ci cd pipeline
+
 ├── faiss/                      # FAISS index for chatbot semantic search
 
 ├── MenuBook/                   # Menu images (image_0.jpeg to image_3.jpeg)
