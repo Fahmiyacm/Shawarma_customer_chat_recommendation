@@ -22,8 +22,8 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
 
-            # Get code
-            cd ~/ShawarmaCustomerApp || git clone https://github.com/${{ github.repository }}.git ~/ShawarmaCustomerApp
+            # Clone or update repo via SSH (using deploy key)
+            cd ~/ShawarmaCustomerApp || git clone git@github.com:Fahmiyacm/Shawarma_customer_chat_recommendation.git ~/ShawarmaCustomerApp
             cd ~/ShawarmaCustomerApp
             git fetch --all
             git reset --hard origin/main
@@ -31,7 +31,7 @@ jobs:
             # Remove Screenshots folder (not needed in EC2)
             rm -rf Screenshots
 
-            # Python env
+            # Python environment
             if [ ! -d "venv" ]; then python3 -m venv venv; fi
             source venv/bin/activate
             pip install --upgrade pip
@@ -44,6 +44,6 @@ jobs:
             # Stop old processes if any
             pkill -f "streamlit run app.py" || true
 
-            # Start app
+            # Start Streamlit app
             nohup streamlit run app.py --server.port 8501 --server.address 0.0.0.0 > customer.log 2>&1 &
           EOF
