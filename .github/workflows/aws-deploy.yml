@@ -9,20 +9,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout this workflow repo
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      # Step 2: Setup SSH agent with your EC2 private key
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.EC2_KEY }}
 
+      # Step 3: Connect to EC2 and deploy
       - name: Deploy to EC2 (pull latest & restart)
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
 
-            # Clone or update repo via SSH (using deploy key)
+            # Clone repo via SSH if it doesn't exist, else pull latest
             cd ~/ShawarmaCustomerApp || git clone git@github.com:Fahmiyacm/Shawarma_customer_chat_recommendation.git ~/ShawarmaCustomerApp
             cd ~/ShawarmaCustomerApp
             git fetch --all
@@ -31,7 +34,7 @@ jobs:
             # Remove Screenshots folder (not needed in EC2)
             rm -rf Screenshots
 
-            # Python environment
+            # Setup Python environment
             if [ ! -d "venv" ]; then python3 -m venv venv; fi
             source venv/bin/activate
             pip install --upgrade pip
@@ -41,7 +44,7 @@ jobs:
             export DATABASE_URL='${{ secrets.DATABASE_URL }}'
             export GROQ_API_KEY='${{ secrets.GROQ_API_KEY }}'
 
-            # Stop old processes if any
+            # Stop old Streamlit processes
             pkill -f "streamlit run app.py" || true
 
             # Start Streamlit app
