@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Load SSH keyssss (EC2 + GitHub deploy key)
+      # 1️⃣ Load SSH keys (EC2 + GitHub deploy key)
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
