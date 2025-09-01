@@ -17,7 +17,7 @@ jobs:
             ${{ secrets.EC2_KEY }}
             ${{ secrets.REPO_SSH_KEY }}
 
-      # 2️⃣ Deploy to EC2
+      # 2️⃣ Deploy 2 EC2
       - name: Deploy to EC2 (pull latest & restart app)
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
