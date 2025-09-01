@@ -9,11 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout workflow files
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      # 2️⃣ Load SSH keys (EC2 + GitHub deploy key)
+      # 1️⃣ Load SSH keys (EC2 + GitHub deploy key)
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
@@ -21,7 +17,7 @@ jobs:
             ${{ secrets.EC2_KEY }}
             ${{ secrets.REPO_SSH_KEY }}
 
-      # 3️⃣ Deploy to EC2
+      # 2️⃣ Deploy to EC2
       - name: Deploy to EC2 (pull latest & restart app)
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
@@ -33,22 +29,20 @@ jobs:
             git fetch --all
             git reset --hard origin/main
 
-            # Remove Screenshots folder (not needed in EC2)
+            # Remove Screenshots folder
             rm -rf Screenshots
 
-            # Setup Python environment
+            # Python environment
             if [ ! -d "venv" ]; then python3 -m venv venv; fi
             source venv/bin/activate
             pip install --upgrade pip
             pip install --no-cache-dir -r requirements.txt
 
-            # Export runtime secrets
+            # Export secrets
             export DATABASE_URL='${{ secrets.DATABASE_URL }}'
             export GROQ_API_KEY='${{ secrets.GROQ_API_KEY }}'
 
-            # Stop previous Streamlit process if running
+            # Restart Streamlit app
             pkill -f "streamlit run app.py" || true
-
-            # Start Streamlit app in background
             nohup streamlit run app.py --server.port 8501 --server.address 0.0.0.0 > customer.log 2>&1 &
           EOF
