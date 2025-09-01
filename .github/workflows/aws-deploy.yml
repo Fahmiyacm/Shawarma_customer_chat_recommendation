@@ -2,35 +2,48 @@ name: Deploy to AWS EC2
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-    - name: Deploy files to EC2
-      uses: appleboy/scp-action@v0.1.5
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_KEY }}
-        source: "."
-        target: ${{ secrets.APP_DIR }}
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_KEY }}
 
-    - name: Restart Streamlit apps
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_KEY }}
-        script: |
-          cd ${{ secrets.APP_DIR }}
-          source venv/bin/activate
-          pkill -f "streamlit run app.py"
-          nohup streamlit run app.py --server.port 8501 --server.address 0.0.0.0 &
-          
+      - name: Deploy to EC2 (pull latest & restart)
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+
+            # Get code
+            cd ~/ShawarmaCustomerApp || git clone https://github.com/${{ github.repository }}.git ~/ShawarmaCustomerApp
+            cd ~/ShawarmaCustomerApp
+            git fetch --all
+            git reset --hard origin/main
+
+            # Remove Screenshots folder (not needed in EC2)
+            rm -rf Screenshots
+
+            # Python env
+            if [ ! -d "venv" ]; then python3 -m venv venv; fi
+            source venv/bin/activate
+            pip install --upgrade pip
+            pip install --no-cache-dir -r requirements.txt
+
+            # Export runtime secrets
+            export DATABASE_URL='${{ secrets.DATABASE_URL }}'
+            export GROQ_API_KEY='${{ secrets.GROQ_API_KEY }}'
+
+            # Stop old processes if any
+            pkill -f "streamlit run app.py" || true
+
+            # Start app
+            nohup streamlit run app.py --server.port 8501 --server.address 0.0.0.0 > customer.log 2>&1 &
+          EOF
