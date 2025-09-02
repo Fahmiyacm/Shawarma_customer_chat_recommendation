@@ -2,6 +2,17 @@
 This application provides an interactive interface for customers to browse the menu,
 place orders, view recommendations, and interact with a chatbot for a shawarma restaurant"""
 
+"""
+Project History: Shawarma Customer App
+
+1. Initially planned to create a conversational ordering system.
+2. Later shifted to a chatbot specifically for a shawarma shop.
+3. Added selection-based ordering system for better user experience.
+4. Implemented a recommendation system to suggest items to customers.
+5. Created an admin panel for order management and menu updates.
+
+This file (app.py) contains the main application logic.
+"""
 
 # --- Standard Libraries ---
 import os
@@ -42,15 +53,19 @@ from reg_helper import format_uae_number, is_valid_uae_number
 
 # Streamlit page configuration (must be first Streamlit command)
 st.set_page_config(page_title="Shawarma DKENZ", layout="wide")
+# Configure logging (console + file)
+log_file = "shawarma_app.log"
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler()]
+    handlers=[
+        logging.StreamHandler(),          # Console output
+        logging.FileHandler(log_file)     # File output
+    ]
 )
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 # Load environment variables
 load_dotenv()
 

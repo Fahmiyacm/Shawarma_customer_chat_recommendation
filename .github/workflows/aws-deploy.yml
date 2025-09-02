@@ -1,48 +1,82 @@
-name: Deploy to AWS EC2
+name: Deploy to Hugging Face Spaces
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Load SSH keys (EC2 + GitHub deploy key)
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.7.0
+      - name: Checkout Repository
+        uses: actions/checkout@v3
         with:
-          ssh-private-key: |
-            ${{ secrets.EC2_KEY }}
-            ${{ secrets.REPO_SSH_KEY }}
+          fetch-depth: 0
+          lfs: true  # Pull LFS files
 
-      # 2️⃣ Deploy 2 EC2
-      - name: Deploy to EC2 (pull latest & restart app)
+      - name: Install Git LFS
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            set -e
+          sudo apt-get update
+          sudo apt-get install -y git-lfs
+          git lfs install
 
-            # Clone repo if not exists, else fetch updates via SSH
-            cd ~/ShawarmaCustomerApp || git clone git@github.com:Fahmiyacm/Shawarma_customer_chat_recommendation.git ~/ShawarmaCustomerApp
-            cd ~/ShawarmaCustomerApp
-            git fetch --all
-            git reset --hard origin/main
+      - name: Set up Git user
+        run: |
+          git config --global user.email "fahmiyacm@gmail.com"
+          git config --global user.name "Fahmiyacm"
 
-            # Remove Screenshots folder
-            rm -rf Screenshots
+      - name: Track binary files with LFS
+        run: |
+          git lfs track "faiss_index/*.faiss"
+          git lfs track "faiss_index/*.pkl"
+          git lfs track "recommender_model.pth"
+          git lfs track "Menubook/*.jpeg"
+          git add .gitattributes
+          git commit -m "Track binary files with Git LFS" || echo "No changes to commit"
 
-            # Python environment
-            if [ ! -d "venv" ]; then python3 -m venv venv; fi
-            source venv/bin/activate
-            pip install --upgrade pip
-            pip install --no-cache-dir -r requirements.txt
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-            # Export secrets
-            export DATABASE_URL='${{ secrets.DATABASE_URL }}'
-            export GROQ_API_KEY='${{ secrets.GROQ_API_KEY }}'
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-            # Restart Streamlit app
-            pkill -f "streamlit run app.py" || true
-            nohup streamlit run app.py --server.port 8501 --server.address 0.0.0.0 > customer.log 2>&1 &
-          EOF
+      - name: Debug File Presence
+        run: |
+          ls -lR .
+          git lfs ls-files
+
+      - name: Verify HF_TOKEN
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "Error: HF_TOKEN is not set or empty"
+            exit 1
+          else
+            echo "HF_TOKEN is set"
+          fi
+
+      - name: Clone Hugging Face Space
+        run: |
+          git clone https://huggingface.co/spaces/Fahmiyacm/shawarma_customer_app hf_space
+
+      - name: Sync Files (excluding .git & Screenshots)
+        run: |
+          rsync -av --exclude=.git --exclude=hf_space --exclude=Screenshots ./ hf_space/
+
+      - name: Commit & Push to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          cd hf_space
+          git lfs install
+          git add .
+          git commit -m "Auto deploy from GitHub" || echo "No changes to commit"
+          git push https://Fahmiyacm:$HF_TOKEN@huggingface.co/spaces/Fahmiyacm/shawarma_customer_app HEAD:main
