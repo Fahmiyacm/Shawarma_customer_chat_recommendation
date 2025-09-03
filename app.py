@@ -1,8 +1,8 @@
 """Shawarma DKENZ Streamlit Application
 This application provides an interactive interface for customers to browse the menu,
-place orders, view recommendations, and interact with a chatbot for a shawarma restaurant"""
+place orders, view recommendations, and interact with a chatbot for a shawarma restaurant
 
-"""
+
 Project History: Shawarma Customer App
 
 1. Initially planned to create a conversational ordering system.
