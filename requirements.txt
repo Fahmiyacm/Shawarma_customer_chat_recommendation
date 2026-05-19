@@ -5,6 +5,7 @@ psycopg2-binary
 langchain-community
 langchain-groq
 langchain
+langchain_core
 sentence-transformers
 pandas
 plotly
