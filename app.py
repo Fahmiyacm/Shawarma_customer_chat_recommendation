@@ -34,7 +34,7 @@ from langchain_community.embeddings import HuggingFaceEmbeddings  # To create se
 
 # --- LangChain Models & Chains ---
 from langchain_groq import ChatGroq  # Integration with Groq LLM for chatbot
-from langchain_core.prompts import PromptTemplate  # Template to format prompts for LLMs
+from langchain.prompts import PromptTemplate  # Template to format prompts for LLMs
 from langchain.chains import LLMChain  # Used to build conversational chain
 
 # Custom modules
