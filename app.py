@@ -34,8 +34,8 @@ from langchain_community.embeddings import HuggingFaceEmbeddings  # To create se
 
 # --- LangChain Models & Chains ---
 from langchain_groq import ChatGroq  # Integration with Groq LLM for chatbot
-from langchain.prompts import PromptTemplate  # Template to format prompts for LLMs
-from langchain.chains import LLMChain  # Used to build conversational chain
+from langchain_core.prompts import PromptTemplate  # Template to format prompts for LLMs
+from langchain_core.output_parsers import StrOutputParser
 
 # Custom modules
 from db_helper import (
@@ -275,13 +275,21 @@ if st.session_state.show_chat:
 
                 Now reply to the customer:
                 """
-                prompt = PromptTemplate(
-                    input_variables=["user_question", "answers"],
-                    template=prompt_template.strip()
+                prompt = PromptTemplate.from_template(prompt_template.strip())
+
+                llm = ChatGroq(
+                    api_key=os.getenv("GROQ_API_KEY"),
+                    model="allam-2-7b",
+                    temperature=0.7
                 )
-                llm = ChatGroq(api_key=os.getenv("GROQ_API_KEY"), model="allam-2-7b")
-                chain = LLMChain(llm=llm, prompt=prompt)
-                response = chain.run(user_question=user_query, answers=answers_text)
+
+                chain = prompt | llm | StrOutputParser()
+                response = chain.invoke({"user_question": user_query, "answers": answers_text})
+
+
+
+
+
                 logger.info("Generated chatbot response successfully")
 
         except Exception as e:
